@@ -9,10 +9,15 @@ def main_itchat(send_pipe, receive_pipe):
             if msg.fromUserName == to:
                 receive_pipe.send(int(msg.text))
                 itchat.send('%s reveived' % msg.text, to)
-        except AttributeError:
+        except RemoteDisconnected as e:
+            print('RemoteDisconnected from reply')
             return
+    print('Weichat start')
     itchat.auto_login(hotReload=True)
     to = itchat.search_friends(nickName=u'小号')[0].userName
     itchat.run(blockThread=False)
     while 1:
-        itchat.send(send_pipe.recv(), to)
+        try:
+            itchat.send(send_pipe.recv(), to)
+        except RemoteDisconnected as e:
+            print('RemoteDisconnected from send')

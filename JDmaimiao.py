@@ -5,6 +5,7 @@ from selenium.common.exceptions import NoSuchElementException
 import time
 from bs4 import BeautifulSoup
 import sys
+import traceback
 
 
 class JDmaimiao(object):
@@ -12,7 +13,9 @@ class JDmaimiao(object):
         # 计数
         self.refresh_count = 0
         # 新建浏览器驱动
-        self.driver = webdriver.Firefox()
+        options = webdriver.ChromeOptions()
+        options.add_argument('User-Agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0"')
+        self.driver = webdriver.Chrome(chrome_options=options)
         self.driver.implicitly_wait(20)
         # 有效任务
         self.valid_tasks = []
@@ -126,6 +129,7 @@ class JDmaimiao(object):
 
 def main_jd(send_pipe, receive_pipe):
     try:
+        print('JD start')
         jd = JDmaimiao()
         jd.main(send_pipe, receive_pipe)
     finally:
