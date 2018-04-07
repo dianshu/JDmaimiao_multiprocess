@@ -1,8 +1,8 @@
 # coding:utf-8
 # 登录
 login_url = 'http://www.zo15.cn'
-username = 'feishicheng'
-passwd = '322199'
+username = ''  # 这里设置为自己的帐号
+passwd = ''  # 这里设置为自己的密码
 id_input_username = 'lusername'
 id_input_passwd = 'lpassword'
 id_button_submit = 'login_btn'
