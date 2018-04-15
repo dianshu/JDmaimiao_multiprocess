@@ -1,6 +1,8 @@
 from JDmaimiao import main_jd
 from WeiChat import main_itchat
 import multiprocessing
+import traceback
+from time import sleep
 
 
 if __name__ == '__main__':
@@ -12,9 +14,12 @@ if __name__ == '__main__':
     jd_p.daemon = True
     while 1:
         try:
-            weichat.start()
+            if not weichat.is_alive():
+                weichat.start()
             jd_p.start()
             jd_p.join()
         except Exception:
-            continue
+            traceback.print_exc()
+            sleep(10000)
+
 

@@ -14,7 +14,7 @@ def main_itchat(send_pipe, receive_pipe):
             return
     print('Weichat start')
     itchat.auto_login(hotReload=True)
-    to = itchat.search_friends(nickName=u'小号')[0].userName
+    to = itchat.search_friends(nickName=u'金牛')[0].userName
     itchat.run(blockThread=False)
     while 1:
         try:

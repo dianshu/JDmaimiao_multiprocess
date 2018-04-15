@@ -1,7 +1,7 @@
 # coding:utf-8
 from params import *
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, WebDriverException
 import time
 from bs4 import BeautifulSoup
 import sys
@@ -50,7 +50,6 @@ class JDmaimiao(object):
                     print(time.strftime('%H:%M:%S') + ': ' + msg)
             time.sleep(20)
 
-
     def login(self):
         self.driver.get(login_url)
         self.driver.find_element_by_id(id_input_username).send_keys(username)
@@ -67,7 +66,7 @@ class JDmaimiao(object):
         self.driver.get(task_filter_url)
 
     def refresh(self):
-        self.driver.find_element_by_class_name(class_a_refresh).click()
+        self.driver.execute_script(script_refresh)
 
     def get_valid_task_number(self):
         return int(self.driver.page_source.count('qcrw taskTask'))
@@ -102,28 +101,53 @@ class JDmaimiao(object):
         valid_tasks.sort(key=lambda x: x['money'] / x['coin'])
 
         for task in valid_tasks:
-            # 点击抢此任务
-            self.driver.find_elements_by_css_selector('[lang=\"%s\"]' % task['lang'])[0].click()
-            # 判断跳出来的div标签是否包含'当前任务金额超出您的垫付立反额度'
-            div_text = self.driver.find_element_by_class_name(class_div_content).text
-            if partial_confirm_content1 in div_text:
-                self.driver.find_element_by_class_name(class_a_btn).click()
-            # 判断跳出来的div标签是否包含'选择接此任务的买号'
-            div_text = self.driver.find_element_by_class_name(class_div_content).text
-            if partial_confirm_content2 in div_text:
-                self.driver.find_element_by_class_name(class_a_btn).click()
-            else:
-                self.driver.find_element_by_class_name(class_a_btn).click()
-            # 判断跳出来的div标签是否包含'您已经成功接手此任务'
             try:
+                # 点击抢此任务
+                self.driver.find_elements_by_css_selector('[lang=\"%s\"]' % task['lang'])[0].click()
+                time.sleep(0.5)
+                # 判断跳出来的div标签包含'手慢啦’
+                div_text = self.driver.find_element_by_class_name(class_div_content).text
+                if partial_confirm_content6 in div_text:
+                    self.driver.find_element_by_class_name(class_a_btn).click()
+                    time.sleep(0.5)
+                    continue
+                # 判断跳出来的div标签是否包含'当前任务金额超出您的垫付立反额度'
+                div_text = self.driver.find_element_by_class_name(class_div_content).text
+                if partial_confirm_content1 in div_text:
+                    self.driver.find_element_by_class_name(class_a_btn).click()
+                    time.sleep(0.5)
+                # 判断跳出来的div标签是否包含'选择接此任务的买号'
+                div_text = self.driver.find_element_by_class_name(class_div_content).text
+                if partial_confirm_content2 in div_text:
+                    self.driver.find_element_by_class_name(class_a_btn).click()
+                    time.sleep(0.5)
+                # 判断跳出来的div标签包含'您的当天’
+                div_text = self.driver.find_element_by_class_name(class_div_content).text
+                if partial_confirm_content7 in div_text:
+                    self.driver.find_element_by_class_name(class_a_btn).click()
+                    time.sleep(0.5)
+                    continue
+                # 判断跳出来的div标签包含'您已经成功接手此任务'还是‘您选择的买号等级没有达到该任务的要求’
                 div_text = self.driver.find_element_by_class_name(class_div_content).text
                 if partial_confirm_content3 in div_text:
                     self.driver.find_element_by_class_name(class_a_btn).click()
+                    time.sleep(0.5)
                     return True
-                else:
+                # 判断跳出来的div标签包含'您选择的买号等级没有达到该任务的要求’
+                div_text = self.driver.find_element_by_class_name(class_div_content).text
+                if partial_confirm_content4 in div_text:
                     self.driver.find_element_by_class_name(class_a_btn).click()
-            except NoSuchElementException:
+                    time.sleep(1)
+                    continue
+                # 判断跳出来的div标签包含'请更换买号’
+                div_text = self.driver.find_element_by_class_name(class_div_content).text
+                if partial_confirm_content5 in div_text:
+                    self.driver.find_element_by_class_name(class_a_btn).click()
+                    time.sleep(1)
+            except (NoSuchElementException, WebDriverException):
                 pass
+
+
         return False
 
 
@@ -133,8 +157,9 @@ def main_jd(send_pipe, receive_pipe):
         jd = JDmaimiao()
         jd.main(send_pipe, receive_pipe)
     finally:
+        traceback.print_exc()
         print('jd fail')
-        jd.driver.quit()
+        # jd.driver.quit()
         sys.exit()
 
 
